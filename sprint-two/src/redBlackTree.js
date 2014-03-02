@@ -79,36 +79,25 @@ RBtree.prototype.propagateUp = function(sibling){
 };
 
 RBtree.prototype.propagate = function(sibling){
-  //sibling is the sibling of the double black node
+  //sibling is referring to the sibling of the double black node
   //case 1
-  console.log('---------------------------------------------------');
-  console.log(this.toString());
   if (this.color === 'black' && sibling.color === 'red'){
-    console.log('case 1---------------------------------------------------');
     this.case1(sibling);
   } else if (sibling.color === 'black' && RBtree.isBlack(sibling.left) && RBtree.isBlack(sibling.right)){
-    console.log('case 2---------------------------------------------------');
     this.case2(sibling);
   } else if (sibling.color === 'black' && RBtree.isRed(sibling[sibling.otherSide()]) && RBtree.isBlack(sibling[sibling.side()]) ){
-    console.log('case 3---------------------------------------------------');
     this.case3(sibling);
   } else if (sibling.color === 'black' && RBtree.isRed(sibling[sibling.side()])){
-    console.log('case 4---------------------------------------------------');
     this.case4(sibling);
   }
 };
 
 RBtree.prototype.case1 = function(sibling){
   this.rotateTo(sibling.otherSide());
-  console.log(this.toString());
-  console.log(sibling);
-  console.log(sibling.sibling());
   sibling.propagate(sibling.left === null? sibling.right : sibling.left);
 };
 
 RBtree.prototype.case2 = function(sibling){
-  console.log('c---------------------------------');
-  console.log(sibling);
   if (  RBtree.isBlack(sibling.left) &&
         RBtree.isBlack(sibling.right) ) {
     //sibling's children are black
@@ -116,17 +105,14 @@ RBtree.prototype.case2 = function(sibling){
     if (this.color === 'red'){
       //absorb extra black
       this.color = 'black';
-  console.log(this.toString());
     } else {
       this.propagateUp(this.sibling());
-  console.log(this.toString());
     }
   }
 };
 
 RBtree.prototype.case3 = function(sibling){
   sibling.rotateTo(sibling.side());
-  console.log(this.toString());
   this.case4(sibling);
 };
 
@@ -134,15 +120,13 @@ RBtree.prototype.case4 = function(sibling){
   var side = sibling.side();
   this.rotateTo(sibling.otherSide());
   this[side].color = 'black';
-  console.log(this.toString());
 };
 
 //===========================
 RBtree.prototype.rebalance = function(newTree){
-  if (this.sibling() === undefined){
-    return;
-  }
-  if (RBtree.isBlack(this)){
+  //this is the parent of the new tree node
+  if ( this.sibling() === undefined || RBtree.isBlack(this) ){
+    //sibling is undefined when this has no parent, thus is root
     return;
   }
   if (RBtree.isRed(this.sibling())){
@@ -158,7 +142,6 @@ RBtree.prototype.rebalance = function(newTree){
 };
 
 RBtree.prototype.repaint = function(){
-  console.log('repaint ' + this.value);
   this.left.color = 'black';
   this.right.color = 'black';
   this.color = 'red';
