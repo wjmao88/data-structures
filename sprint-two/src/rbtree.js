@@ -1,5 +1,4 @@
-var RBtree = function(value, parent, auto, debug){
-  //console.log('make red black tree ' + value + ' | '+ parent);
+var RBT = function(value, parent, auto, debug){
   BinarySearchTree.apply(this, arguments);
   this.value = value;
   this.color = (parent === undefined || parent === null)? 'black' : 'red';
@@ -11,27 +10,27 @@ var RBtree = function(value, parent, auto, debug){
 };
 
 (function(){
-  RBtree.prototype = Object.create(BinarySearchTree.prototype);
-  RBtree.prototype.contructor = RBtree;
+  RBT.prototype = Object.create(BinarySearchTree.prototype);
+  RBT.prototype.contructor = RBT;
 }());
 
-RBtree.opposite = function(side){
+RBT.opposite = function(side){
   return side==='left'? 'right': 'left';
 };
 
-RBtree.isBlack = function(node){
+RBT.isBlack = function(node){
   return (node === null || node.color === 'black');
 };
 
-RBtree.isRed = function(node){
+RBT.isRed = function(node){
   return node !== null && node.color === 'red';
 };
 
-RBtree.prototype.factory = function(value, parent, autoRebalance, debug){
-  return new RBtree(value, parent, autoRebalance, this.debug);
+RBT.prototype.factory = function(value, parent, autoRebalance, debug){
+  return new RBT(value, parent, autoRebalance, this.debug);
 };
 
-RBtree.prototype.toArray = function(arr, head){
+RBT.prototype.toArray = function(arr, head){
   arr = arr || [];
   head = head || 0;
   arr[head] = '{ ' + this.value + ' : ' + this.color + ' }';
@@ -44,10 +43,7 @@ RBtree.prototype.toArray = function(arr, head){
   return arr;
 };
 
-RBtree.prototype.removeSelf = function(){
-  if( this.value  == 55){
-    debugger;
-  }
+RBT.prototype.removeSelf = function(){
   var replacingNode = BinarySearchTree.prototype.removeSelf.call(this);
   if (this.color === 'red'){
     //removing a red need no changes
@@ -60,11 +56,12 @@ RBtree.prototype.removeSelf = function(){
     replacingNode.color = 'black';
     return;
   }
-  var sibling = this.sibling();
+  var sibling = this.left === replacingNode? this.left : this.right;
+  //debugger;
   this.parent.propagatedFrom(sibling);
 };
 
-RBtree.prototype.propagatedFrom = function(sibling){
+RBT.prototype.propagatedFrom = function(sibling){
   //case 1
   if (this.color === 'black' && sibling !== null && sibling.color === 'red'){
     return this.case1(sibling);
@@ -83,14 +80,14 @@ RBtree.prototype.propagatedFrom = function(sibling){
   }
 };
 
-RBtree.prototype.case1 = function(sibling){
+RBT.prototype.case1 = function(sibling){
   this.selfRotate(sibling.otherSide());
   this.propagatedFrom(sibling);
 };
 
-RBtree.prototype.case2 = function(sibling){
-  if (  RBtree.isBlack(sibling.left) &&
-        RBtree.isBlack(sibling.right) ) {
+RBT.prototype.case2 = function(sibling){
+  if (  RBT.isBlack(sibling.left) &&
+        RBT.isBlack(sibling.right) ) {
     //sibling's children are black
     sibling.color = 'red';
     if (this.color === 'red'){
@@ -103,25 +100,25 @@ RBtree.prototype.case2 = function(sibling){
   }
 };
 
-RBtree.prototype.case3 = function(sibling){
+RBT.prototype.case3 = function(sibling){
   sibling.selfRotate(sibling.otherSide());
   this.case4(sibling);
 };
 
-RBtree.prototype.case4 = function(sibling){
+RBT.prototype.case4 = function(sibling){
   this.selfRotate(sibling.otherSide());
   this.case4(sibling);
 };
 //===========================
-RBtree.prototype.propagateUp = function(){
+RBT.prototype.propogateUp = function(){
   if (this.parent !== null){
     this.parent.propagatedFrom(this);
   }
 };
 
-RBtree.prototype.selfRotate = function(direction){
+RBT.prototype.selfRotate = function(direction){
   var to = direction;
-  var from = RBtree.opposite(direction);
+  var from = RBT.opposite(direction);
   var values = {};
   values.head = this[from].value;
   values[to] = this.value;
@@ -135,15 +132,15 @@ RBtree.prototype.selfRotate = function(direction){
   //
   this[to] = this[from];
   //re-assign externals
-  this[from] = nodes[from];
+  this[from] = nodes[from];b
   nodes[from].parent = this;
   this[to][from] = nodes.middle;
-  nodes.middle.parent = this[to];
+  nodes.middle,parent = this[to];
   this[to][to] = nodes[to];
   nodes[to].parent = this[to];
 };
 //===========================
-RBtree.prototype.side = function(){
+RBT.prototype.side = function(){
   if (this.parent.left === this) {
     return 'left';
   } else {
@@ -151,7 +148,7 @@ RBtree.prototype.side = function(){
   }
 };
 
-RBtree.prototype.otherSide = function(){
+RBT.prototype.otherSide = function(){
   if (this.parent.left === this) {
     return 'right';
   } else {
@@ -159,14 +156,14 @@ RBtree.prototype.otherSide = function(){
   }
 };
 
-RBtree.prototype.sibling = function(){
+RBT.prototype.sibling = function(){
   if (this.parent === null){
     return null;
   }
   return this.parent[this.otherSide()];
 };
 
-RBtree.prototype.uncle = function(){
+RBT.prototype.uncle = function(){
   if (this.parent === null){
     return null;
   }
@@ -174,19 +171,19 @@ RBtree.prototype.uncle = function(){
 };
 
 //===========================
-RBtree.prototype.numRedChild = function(){
+RBT.prototype.numRedChild = function(){
   var count = 0;
   count += this.left !== null && this.left.color === 'red'? 1 : 0;
   count += this.right !== null && this.right.color === 'red'? 1 : 0;
   return count;
 };
 
-RBtree.prototype.hasRedChild = function(){
+RBT.prototype.hasRedChild = function(){
   return (this.left !== null && this.left.color === 'red') ||
         (this.right !== null && this.right.color === 'red');
 };
 
-RBtree.prototype.rebalance = function(newTree){
+RBT.prototype.rebalance = function(newTree){
   if (this.color === 'black' || newTree.color === 'black'){
     return;
   }
@@ -202,7 +199,7 @@ RBtree.prototype.rebalance = function(newTree){
   //console.log('end reblance ' + this.parent.toArray());
 };
 //===========================
-RBtree.prototype.repaint = function(){
+RBT.prototype.repaint = function(){
   console.log('repaint ' + this.value);
   this.left.color = 'black';
   this.right.color = 'black';
@@ -216,7 +213,7 @@ RBtree.prototype.repaint = function(){
   }
 };
 
-RBtree.prototype.rotate = function(d1, d2, blackChildren){
+RBT.prototype.rotate = function(d1, d2, blackChildren){
   //rotation occurs when 3 nodes are in a list structure
   //they will be grandparent, parent and child
   //inside this function, the keyword this is the child

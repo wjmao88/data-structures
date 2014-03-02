@@ -46,6 +46,7 @@ BinarySearchTree.prototype.findNode = function(value){
 };
 
 BinarySearchTree.prototype.remove = function(value){
+  debugger;
   //value target is the node with the value to be deleted
   var valueTarget = this.findNode(value);
   //console.log('remove self');
@@ -183,16 +184,16 @@ BinarySearchTree.prototype.sidemostLeaf = function(side){
 };
 
 BinarySearchTree.prototype.predecessor = function(){
-  if (this.right === null){
-    return this;
-  }
-  return this.right.sidemostLeaf('left');
-};
-BinarySearchTree.prototype.successor = function(){
   if (this.left === null){
     return this;
   }
   return this.left.sidemostLeaf('right');
+};
+BinarySearchTree.prototype.successor = function(){
+  if (this.right === null){
+    return this;
+  }
+  return this.right.sidemostLeaf('left');
 };
 
 

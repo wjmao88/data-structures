@@ -4,20 +4,20 @@ describe("redBlackTree", function() {
   var redBlackTree;
 
   beforeEach(function() {
-    redBlackTree = new RedBlackTree(5, null, true, function(){
+    redBlackTree = new RBtree(50, null, true, function(){
       console.log('debugger');
       console.log(redBlackTree.toArray());
     });
   });
 
-  it("should have methods named 'insert', 'contains', and 'depthFirstLog", function() {
+  xit("should have methods named 'insert', 'contains', and 'depthFirstLog", function() {
     expect(redBlackTree.insert).to.be.a('function');
     expect(redBlackTree.contains).to.be.a('function');
     expect(redBlackTree.depthFirstLog).to.be.a('function');
   });
 
 
-  it("should have a working 'contains' method", function(){
+  xit("should have a working 'contains' method", function(){
     redBlackTree.insert(2);
     redBlackTree.insert(3);
     redBlackTree.insert(7);
@@ -25,7 +25,7 @@ describe("redBlackTree", function() {
     assert.isFalse(redBlackTree.contains(8));
   });
 
-  it("should execute a callback on every value in a tree using 'depthFirstLog'", function(){
+  xit("should execute a callback on every value in a tree using 'depthFirstLog'", function(){
     var array = [];
     var func = function(value){ array.push(value); }
     redBlackTree.insert(2);
@@ -34,7 +34,7 @@ describe("redBlackTree", function() {
     assert.notStrictEqual(array, [5,2,3]);
   });
 
-  it("should execute a callback on every value in a tree using 'breadthFirstLog'", function(){
+  xit("should execute a callback on every value in a tree using 'breadthFirstLog'", function(){
     var array = [];
     var func = function(value){ array.push(value); }
     redBlackTree.insert(2);
@@ -43,17 +43,17 @@ describe("redBlackTree", function() {
     assert.notStrictEqual(array, [5,2,3]);
   });
 
-  it("should find the closest value to a given target", function(){
-    var array = [60,70,80,76,23,30,55,32,88,9,100];
-    redBlackTree = new RedBlackTree(50);
+  xit("should find the closest value to a given target", function(){
+    var array = [60,70,80,76,23,30,32,88,9,100];
+    redBlackTree = new RBtree(50);
     for (var i=0; i< array.length; i++){
       redBlackTree.insert(array[i]);
     }
     expect(redBlackTree.closestValue(54)).to.equal(55);
   });
 
-  it("should rebalance automatically", function(){
-    var array = [60,70,850,76,23,330,55,32,88,9,150,6,26,87,3];
+  xit("should rebalance automatically", function(){
+    var array = [60,70,850,76,23,330,32,88,9,150,6,26,87,3];
     var leftDepth, rightDepth;
     for (var i=0; i< array.length; i++){
       redBlackTree.insert(array[i]);
@@ -64,7 +64,7 @@ describe("redBlackTree", function() {
     console.log(redBlackTree.toArray());
   });
 
-  it("should be deleting", function(){
+  xit("should be deleting", function(){
     var array = [1,2,3,4,7];
     var leftDepth, rightDepth;
     for (var i=0; i< array.length; i++){
@@ -82,7 +82,7 @@ describe("redBlackTree", function() {
     console.log(redBlackTree.toArray());
   });
 
-  xit("should rebalance when deleting", function(){
+  it("should rebalance when deleting", function(){
     var array = [60,70,850,76,23,330,55,32,88,9,150,6,26,87,3];
     var leftDepth, rightDepth;
     for (var i=0; i< array.length; i++){
@@ -90,14 +90,38 @@ describe("redBlackTree", function() {
     }
     console.log(redBlackTree.toArray());
     console.log('start delete');
+    console.log('of big list');
     for (var i=0; i< array.length; i++){
+      console.log('before removal of ' + array[i] + ' | ')
       redBlackTree.remove(array[i]);
+      console.log('after removal of ' + array[i] + ' | ');
       leftDepth = redBlackTree.left === null? 0 : redBlackTree.left.depth();
       rightDepth = redBlackTree.right === null? 0 : redBlackTree.right.depth();
       assert.isTrue(redBlackTree.isBalanced());
       console.log(redBlackTree.toArray());
     }
     console.log(redBlackTree.toArray());
+  });
+
+  it("farid spec", function(){
+    console.log("before spec");
+    redBlackTree.insert(25);
+    console.log("inserted 25",redBlackTree.toArray());
+    redBlackTree.insert(75);
+    console.log("inserted 75",redBlackTree.toArray());
+    redBlackTree.insert(15);
+    console.log("inserted 15",redBlackTree.toArray());
+    redBlackTree.remove(50);
+    console.log("removed 50",redBlackTree.toArray());
+    redBlackTree.remove(75);
+    console.log("removed 75",redBlackTree.toArray());
+    // console.log("",redBlackTree.toArray());
+
+    // redBlackTree.insert(75);
+    // console.log(redBlackTree.toArray());
+    // redBlackTree.insert(5);
+    // console.log(redBlackTree.toArray());
+
   });
 
 });
