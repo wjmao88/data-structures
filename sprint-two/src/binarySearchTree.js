@@ -1,84 +1,166 @@
-var BinarySearchTree = function(value, parent, auto, debug){
+var BinarySearchTree = function(value, parent, comp){
   this.value = value;
   this.left = null;
   this.right = null;
   this.parent = parent || null;
-  this.autoRebalance = auto === undefined? true : auto;;
-
-  this.debug = function(){
-    console.log('bst');
+  this.comparator = this.parent !== null? parent.comparator : comp || function(myValue, newValue){
+    return myValue > newValue? -1 : 1;
   };
 };
 
-BinarySearchTree.prototype.factory = function(value, parent, autoRebalance){
-  return new BinarySearchTree(value, parent, autoRebalance, this.debug);
+BinarySearchTree.prototype.factory = function(value, parent){
+  return new BinarySearchTree(value, parent);
+};
+//=========================================================
+//utility
+BinarySearchTree.prototype.whichSide = function(value){
+  return this.comparator(this.value, value) < 0? 'left' : 'right';
 };
 
-BinarySearchTree.prototype.insert = function(value){
-  if (this.value === value){
-    return;
+BinarySearchTree.prototype.side = function(){
+  if (this.parent === null){
+    return undefined;
   }
-  var side = this.value > value ? 'left' : 'right';
-  if (this[side] === null){
-    this[side] = this.factory(value, this, this.autoRebalance);
-    //this.autoRebalance? this.rebalance(this[side]) : '';
-  } else {
-    this[side].insert(value);
+  if (this.parent.left === this){
+    return 'left';
   }
-  // every insert is reblancing every child starting from node
-  //
-  this.autoRebalance? this.rebalance(this[side]) : '';
+  if (this.parent.right === this){
+    return 'right';
+  }
+  return this.parent.left === null? 'left' : 'right';
 };
 
-BinarySearchTree.prototype.contains = function(value){
-  return this.findNode(value) !== undefined;
+BinarySearchTree.prototype.otherSide = function(side){
+  return (side || this.side()) === 'left'? 'right' : 'left';
 };
 
-BinarySearchTree.prototype.findNode = function(value){
+BinarySearchTree.prototype.sibling = function(){
+  return this.parent === null? undefined : this.parent[this.otherSide()];
+};
+
+BinarySearchTree.prototype.uncle = function(){
+  return this.parent === null? undefined : this.parent.sibling();
+};
+
+BinarySearchTree.prototype.depth = function(){
+  return Math.max(this.leftDepth(), this.rightDepth()) + 1;
+};
+
+BinarySearchTree.prototype.leftDepth = function(){
+  return this.left === null? 0 : this.left.depth();
+};
+
+BinarySearchTree.prototype.rightDepth = function(){
+  return this.right === null? 0 : this.right.depth();
+};
+
+BinarySearchTree.prototype.unbalancedSide = function(){
+  var left = this.leftDepth();
+  var right = this.rightDepth();
+  if ( left < right && ( (left === 0 && right >= 2) || (left !== 0 && left * 2 < right) ) ) {
+    return 'left';
+  }
+  if ( right < left && ( (right === 0 && left >= 2) || (right !== 0 && right * 2 < left) ) ){
+    return 'right';
+  }
+  return undefined;
+};
+//=========================================================
+//base mathods
+BinarySearchTree.prototype.findClosest = function(value){
   if (this.value === value){
     return this;
   }
-  var side = this.value > value ? 'left' : 'right';
-  if (this[side] === null){
-    return undefined;
+  var side = this.whichSide(value);
+  return this[side] === null? this : this[side].findClosest(value);
+};
+
+BinarySearchTree.prototype.attach = function(value){
+  if (this.value === value){
+    return;
   }
-  return this[side].findNode(value);
+  this[this.whichSide(value)] = this.factory(value, this);
+  this.rebalance(this[this.whichSide(value)]);
+};
+
+BinarySearchTree.prototype.removeSelf = function(root){
+  var side = this.leftDepth() > this.rightDepth()? 'left' : 'right';
+  if (this[side] !== null){
+    var target = this[side].findClosest(this.value);
+    this.value = target.value;
+    return BinarySearchTree.prototype.removeSelf.call(target, root);
+  }
+  if (this.parent === null){
+    //delete root?
+    return this;
+  }
+  this.parent[this.side()] = null;
+  if (root !== undefined){
+    root.rebalance();
+  }
+  return this;
+};
+
+BinarySearchTree.prototype.rebalance = function(){
+  var lesserSide = this.unbalancedSide();
+  if (lesserSide === undefined){
+    return;
+  }
+  this.shiftTo(lesserSide);
+  this.left === null? '' : this.left.rebalance();
+  this.right === null? '' : this.right.rebalance();
+  this.rebalance();
+};
+
+BinarySearchTree.prototype.shiftTo = function(to){
+  var target = this[this.otherSide(to)].findClosest(this.value);
+  var oldHeadValue = this.value;
+  this.value = target.value;
+  target.removeSelf();
+  this.insert(oldHeadValue);
+};
+
+BinarySearchTree.prototype.rotateTo = function(to){
+  //rotating root left of its current position would be from left to right
+  var from = this.otherSide(to);
+  //swap value of parent and node in the from direction
+  var temp = this.value;
+  this.value = this[from].value;
+  this[from].value = temp;
+  //external nodes
+  var toSideNode = this[to];
+  var fromSideNode = this[from][from];
+  //switch the side of links between root and child on the from side
+  this[from][from] = this[from][to];
+  this[to] = this[from];
+  //re-assign externals
+  this[from] = fromSideNode;
+  fromSideNode === null? '' : fromSideNode.parent = this;
+  this[to][to] = toSideNode;
+  toSideNode === null? '' : toSideNode.parent = this[to];
+};
+//=========================================================
+//interface methods
+BinarySearchTree.prototype.insert = function(value){
+  this.findClosest(value).attach(value);
+};
+
+BinarySearchTree.prototype.contains = function(value){
+  return this.findClosest(value).value === value;
 };
 
 BinarySearchTree.prototype.remove = function(value){
-  debugger;
   //value target is the node with the value to be deleted
-  var valueTarget = this.findNode(value);
-  //console.log('remove self');
-  //console.log(valueTarget.toArray());
-  if (valueTarget === undefined){
+  var valueTarget = this.findClosest(value);
+  if (valueTarget.value !== value){
+    //value is not here
     return;
   }
-  //node target is the actual node that needs to disappeare from the tree
-  var nodeTarget = valueTarget.predecessor();
-  if (nodeTarget.parent === null){
-    nodeTarget = valueTarget.successor();
-    if (nodeTarget === valueTarget){
-      //no predecessor nor successor
-      return;
-    }
-  }
-  valueTarget.value = nodeTarget.value;
-  nodeTarget.removeSelf();
-  //console.log('remove self end');
-  //console.log(valueTarget.toArray());
+  valueTarget.removeSelf(this);
 };
 
-BinarySearchTree.prototype.removeSelf = function(){
-  var leaf = this.left === null? this.right : this.left;
-  var side = this.parent.left === this? 'left' : 'right';
-  if (leaf !== null){
-    leaf.parent = this.parent;
-  }
-  this.parent[side] = leaf;
-  return leaf;
-};
-
+//=========================================================
+//full traversal
 BinarySearchTree.prototype.depthFirstLog = function(func){
   if (this.left !== null){
     this.left.depthFirstLog(func);
@@ -111,90 +193,12 @@ BinarySearchTree.prototype.toArray = function(arr, head){
   return arr;
 };
 
-BinarySearchTree.prototype.closestValue = function(value){
-  var left, right;
-  if (this.left !== null){
-    left = this.left.closestValue(value);
+BinarySearchTree.prototype.log = function(depth){
+  var str = '';
+  for (var i=0; i<depth; i++){
+    str += '--';
   }
-  if (this.right !== null){
-    right = this.right.closestValue(value);
-  }
-  var closest = this.value;
-  if (left && left !== null && Math.abs(left - value) < Math.abs(closest - value)){
-    closest = left;
-  }
-  if (right && right !== null && Math.abs(right - value) < Math.abs(closest - value)){
-    closest = right;
-  }
-  return closest;
+  this.left !== null && this.left.log(depth+1);
+  console.log(str + this.value);
+  this.right !== null && this.right.log(depth+1);
 };
-
-BinarySearchTree.prototype.depth = function(){
-  return Math.max(this.leftDepth(), this.rightDepth()) + 1;
-};
-
-BinarySearchTree.prototype.leftDepth = function(){
-  return this.left === null? 0 : this.left.depth();
-};
-
-BinarySearchTree.prototype.rightDepth = function(){
-  return this.right === null? 0 : this.right.depth();
-};
-
-BinarySearchTree.prototype.isBalanced = function(leftDepth,rightDepth){
-  return ( leftDepth < rightDepth && ((leftDepth === 0 && rightDepth < 2) || (leftDepth !== 0 && leftDepth * 2 >= rightDepth))  ) ||
-        ( rightDepth < leftDepth && ((rightDepth === 0 && leftDepth < 2) || (rightDepth !== 0 && rightDepth * 2 >= leftDepth))  ) ||
-        rightDepth === leftDepth;
-};
-
-BinarySearchTree.prototype.rebalance = function(){
-  console.log('bst rebalance');
-  //determine depth on either side
-  var leftDepth = this.leftDepth();
-  var rightDepth = this.rightDepth();
-  if (this.isBalanced(leftDepth,rightDepth)) {
-    return false;
-  }
-  //not balanced,
-  //find the sidemost leaf
-  var side = leftDepth > rightDepth? 'left' : 'right';
-  var leafSide = leftDepth > rightDepth? 'right' : 'left';
-  var sidemostLeaf = this[side].sidemostLeaf(leafSide);
-
-  //save and replace value of head with value of the sidemost leaf
-  var oldHeadValue = this.value;
-  this.value = sidemostLeaf.value;
-
-  //removing sidemost leaf and attach its child to its parent
-  sidemostLeaf.parent[leafSide] = sidemostLeaf[side];
-  if (sidemostLeaf[side] !== null){
-    sidemostLeaf[side].parent = sidemostLeaf.parent;
-  }
-  //resinert revious value of head
-  this.insert(oldHeadValue);
-  return true;
-};
-
-BinarySearchTree.prototype.sidemostLeaf = function(side){
-  var most = this;
-  while( most[side] !== null){
-    most = most[side];
-  }
-  return most;
-};
-
-BinarySearchTree.prototype.predecessor = function(){
-  if (this.left === null){
-    return this;
-  }
-  return this.left.sidemostLeaf('right');
-};
-BinarySearchTree.prototype.successor = function(){
-  if (this.right === null){
-    return this;
-  }
-  return this.right.sidemostLeaf('left');
-};
-
-
-
