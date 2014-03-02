@@ -1,12 +1,12 @@
 var expect = chai.expect;
 
-describe("hashTable", function() {
+describe("bloomFilter", function() {
   var hashTable;
   var people = [["Steven", "Tyler"], ["George", "Harrison"], ["Mr.", "Doob"], ["Dr.", "Sunshine"], ["John", "Resig"], ["Brendan", "Eich"], ["Alan", "Turing"], ['A', 'HAHA'], ['B', 'HAHA'], ['C', 'HAHA'], ['D', 'HAHA'], ['E', 'HAHA']];
 
 
   beforeEach(function() {
-    hashTable = new HashTable();
+    hashTable = new BloomFilter();
   });
 
   it("should have methods named 'insert', 'remove', and 'retrieve", function() {
@@ -46,7 +46,7 @@ describe("hashTable", function() {
       var firstName = people[i][0], lastName = people[i][1];
       hashTable.insert(firstName,lastName);
     }
-    expect(hashTable._limit).to.equal(16);
+    expect(hashTable.table._limit).to.equal(16);
   });
 
   it("should halve in size when needed", function() {
@@ -54,7 +54,7 @@ describe("hashTable", function() {
       var firstName = people[i][0], lastName = people[i][1];
       hashTable.insert(firstName,lastName);
     }
-    expect(hashTable._limit).to.equal(16);
+    expect(hashTable.table._limit).to.equal(16);
     hashTable.remove("George");
     hashTable.remove("Dr.");
     hashTable.remove("Steven");
@@ -64,6 +64,6 @@ describe("hashTable", function() {
     hashTable.remove("B");
     hashTable.remove("C");
     hashTable.remove("D");
-    expect(hashTable._limit).to.equal(8);
+    expect(hashTable.table._limit).to.equal(8);
   });
 });

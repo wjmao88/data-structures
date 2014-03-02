@@ -1,10 +1,10 @@
-var assert = chai.assert; 
+var assert = chai.assert;
 
 describe("binarySearchTree", function() {
   var binarySearchTree;
 
   beforeEach(function() {
-    binarySearchTree = makeBinarySearchTree(5);
+    binarySearchTree = new BinarySearchTree(5, null, false);
   });
 
   it("should have methods named 'insert', 'contains', and 'depthFirstLog", function() {
@@ -29,7 +29,7 @@ describe("binarySearchTree", function() {
     assert.isTrue(binarySearchTree.contains(7));
     assert.isFalse(binarySearchTree.contains(8));
   });
-  
+
   it("should execute a callback on every value in a tree using 'depthFirstLog'", function(){
     var array = [];
     var func = function(value){ array.push(value); }
@@ -37,5 +37,56 @@ describe("binarySearchTree", function() {
     binarySearchTree.insert(3);
     binarySearchTree.depthFirstLog(func);
     assert.notStrictEqual(array, [5,2,3]);
+  });
+
+  it("should execute a callback on every value in a tree using 'breadthFirstLog'", function(){
+    var array = [];
+    var func = function(value){ array.push(value); }
+    binarySearchTree.insert(2);
+    binarySearchTree.insert(3);
+    binarySearchTree.breadthFirstLog(func);
+    assert.notStrictEqual(array, [5,2,3]);
+  });
+
+  it("should find the closest value to a given target", function(){
+    var array = [60,70,80,76,23,30,55,32,88,9,100];
+    binarySearchTree = binarySearchTree = new BinarySearchTree(50, null, false);
+    for (var i=0; i< array.length; i++){
+      binarySearchTree.insert(array[i]);
+    }
+    expect(binarySearchTree.closestValue(54)).to.equal(55);
+  });
+
+  it("should find sidemost leaf", function(){
+    var array = [5, 20, 2, 7, 15, 40, 1, 3, 6];
+    binarySearchTree = new BinarySearchTree(10, null, false);
+    for (var i=0; i< array.length; i++){
+      binarySearchTree.insert(array[i]);
+    }
+    expect(binarySearchTree.left.sidemostLeaf('right').value).to.equal(7);
+    expect(binarySearchTree.right.sidemostLeaf('left').value).to.equal(15);
+  });
+
+  it("should tell depth", function(){
+    var array = [5, 20, 2, 7, 15, 40, 1, 3, 6];
+    binarySearchTree = new BinarySearchTree(10, null, false);
+    for (var i=0; i< array.length; i++){
+      binarySearchTree.insert(array[i]);
+    }
+    expect(binarySearchTree.depth() ).to.equal( 4);
+    expect(binarySearchTree.right.depth() ).to.equal( 2);
+    expect(binarySearchTree.left.depth() ).to.equal( 3);
+  });
+
+  it("should rebalance automatically", function(){
+    var array = [1,2,3,4,5,6,7,8,9];
+    var leftDepth, rightDepth;
+    binarySearchTree.autoRebalance = true;
+    for (var i=0; i< array.length; i++){
+      binarySearchTree.insert(array[i]);
+      leftDepth = binarySearchTree.left === null? 0 : binarySearchTree.left.depth();
+      rightDepth = binarySearchTree.right === null? 0 : binarySearchTree.right.depth();
+      assert.isTrue(binarySearchTree.isBalanced());
+    }
   });
 });
